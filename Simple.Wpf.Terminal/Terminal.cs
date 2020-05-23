@@ -501,16 +501,28 @@ namespace Simple.Wpf.Terminal
 
             var inlines = items.SelectMany(x =>
             {
-                var value = ExtractValue(x);
-
                 var newInlines = new List<Inline>();
-                using (var reader = new StringReader(value))
+
+                Run run = new Run { Foreground = GetForegroundColor(x), Tag = x, };
+
+                if ((x is INotifyCollectionChanged || x is System.ComponentModel.INotifyPropertyChanged) && !string.IsNullOrEmpty(ItemDisplayPath))
                 {
-                    var line = reader.ReadLine();
-                    
-                    newInlines.Add(new Run(line) { Foreground = GetForegroundColor(x) });
-                    newInlines.Add(new LineBreak());
+                    run.Text = ExtractValue(x);
+                    run.SetBinding(Run.TextProperty, new Binding(ItemDisplayPath) { Source = x, });
                 }
+                else
+                {
+                    var value = ExtractValue(x);
+
+                    using (var reader = new StringReader(value))
+                    {
+                        var line = reader.ReadLine();
+                        run.Text = line;
+                    }
+                }
+
+                newInlines.Add(run);
+                newInlines.Add(new LineBreak());
 
                 return newInlines;
 
@@ -537,12 +549,28 @@ namespace Simple.Wpf.Terminal
         {
             foreach (var item in items)
             {
-                var value = ExtractValue(item);
+                Run run;
 
-                var run = _paragraph.Inlines
-                    .Where(x => x is Run)
-                    .Cast<Run>()
-                    .FirstOrDefault(x => x.Text == value);
+                if (item is string)
+                {
+                    var value = ExtractValue(item);
+
+                    run =
+                        _paragraph
+                            .Inlines
+                            .Where(x => x is Run)
+                            .Cast<Run>()
+                            .FirstOrDefault(x => x.Text == value);
+                }
+                else
+                {
+                    run =
+                        _paragraph
+                            .Inlines
+                            .Where(x => x is Run)
+                            .Cast<Run>()
+                            .FirstOrDefault(x => x.Tag == item);
+                }
 
                 if (run != null)
                 {
