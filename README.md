@@ -1,5 +1,12 @@
-Simple.Wpf.Terminal
-===================
+# Simple.Wpf.Terminal
+
+[![NuGet](https://img.shields.io/nuget/v/simple.wpf.terminal.svg)](https://github.com/oriches/simple.wpf.terminal)
+[![Build status](https://ci.appveyor.com/api/projects/status/q6156o3477vsss4p/branch/master?svg=true)](https://ci.appveyor.com/project/oriches/simple-wpf-terminal/branch/master)
+
+Supported versions:
+
+	.NET Framework 4.8 and higher,
+	.Net Core 3.1 and higher,
 
 A simple console\\terminal window for use in a WPF application, this is a user control that will allow the user to enter a line of text (script\\command) and\or display a list of items in a console\\terminal style.
 
@@ -12,10 +19,6 @@ For more information about the releases see [Release Info] (https://github.com/o
 For more information about the styling the control see [Style Info] (https://github.com/oriches/Simple.Wpf.Terminal/wiki/Style-Info).
 
 Currently we support the following .Net versions:
-
-Supported versions:
-
-	.NET framework 4.0 and higher,
 	
 This library is available as a nuget [package] (https://www.nuget.org/packages/Simple.Wpf.Terminal/).
 
