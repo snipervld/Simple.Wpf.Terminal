@@ -125,7 +125,11 @@ namespace Simple.Wpf.Terminal
             
             TextChanged += (s, e) =>
                            {
-	                           Line = AggregateAfterPrompt();
+                                if (_isAggregateAfterPrompt)
+                                {
+                                    return;
+                                }
+
 	                           ScrollToEnd();
                            };
 
@@ -664,6 +668,8 @@ namespace Simple.Wpf.Terminal
         {
             if (!_currentAutoCompletionList.Any())
             {
+                Line = AggregateAfterPrompt();
+
                 _currentAutoCompletionList = AutoCompletionsSource != null ? AutoCompletionsSource.ToList() : new List<string>();
             }
 
@@ -746,6 +752,12 @@ namespace Simple.Wpf.Terminal
             var promptEnd = _promptInline.ContentEnd;
 
             var textPointer = GetTextPointer(promptEnd, LogicalDirection.Forward);
+
+            if (textPointer == null && FixAfterPrompt())
+            {
+                return true;
+            }
+
             if (textPointer == null)
             {
                 var pos = CaretPosition.CompareTo(promptEnd);
@@ -820,11 +832,18 @@ namespace Simple.Wpf.Terminal
             CaretPosition = Document.ContentEnd;
         }
 
+        private bool _isAggregateAfterPrompt = false;
+
         private string AggregateAfterPrompt()
         {
+            _isAggregateAfterPrompt = true;
+            FixAfterPrompt();
+
             var inlineList = _paragraph.Inlines.ToList();
             var promptIndex = inlineList.IndexOf(_promptInline);
             
+            _isAggregateAfterPrompt = false;
+
             return inlineList.Where((x, i) => i > promptIndex)
                 .Where(x => x is Run)
                 .Cast<Run>()
@@ -849,6 +868,24 @@ namespace Simple.Wpf.Terminal
             _paragraph.Inlines.Add(new Run());
 
             CaretPosition = Document.ContentEnd;
+        }
+
+        private bool FixAfterPrompt()
+        {
+            if (_promptInline.Parent is Paragraph p
+                && _promptInline.Text != Prompt
+                && !string.IsNullOrEmpty(_promptInline.Text))
+            {
+                var run = new Run(_promptInline.Text.Remove(0, Math.Min(_promptInline.Text.Length, (Prompt ?? string.Empty).Length)));
+                p.Inlines.InsertAfter(_promptInline, run);
+                _promptInline.Text = Prompt;
+
+                CaretPosition = run.ContentEnd;
+
+                return true;
+            }
+
+            return false;
         }
     }
 }
